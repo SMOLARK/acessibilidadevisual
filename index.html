@@ -1,64 +1,712 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR" class="h-full">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Confere Aí - Checagem de Notícias</title>
-  <link rel="stylesheet" href="style.css" />
-</head>
-<body>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Guardião Digital - UX e Acessibilidade no Front-End</title>
 
-  <header>
-    <h1>Confere Aí 🔍</h1>
-    <p>Passe o mouse (ou toque) no cartão para descobrir o que é <strong>Mito</strong> e o que é <strong>Verdade</strong>!</p>
+  <!-- Tailwind CSS para estilização rápida e responsiva -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    :root {
+      --tamanho-fonte-base: 100%;
+    }
+
+    html {
+      font-size: var(--tamanho-fonte-base);
+      scroll-behavior: smooth;
+    }
+
+    /* ESTILOS DE ALTO CONTRASTE ATIVADOS VIA JAVASCRIPT */
+    body.alto-contraste {
+      background-color: #000000 !important;
+      color: #ffff00 !important;
+    }
+
+    body.alto-contraste header,
+    body.alto-contraste nav,
+    body.alto-contraste main,
+    body.alto-contraste section,
+    body.alto-contraste footer,
+    body.alto-contraste div,
+    body.alto-contraste article,
+    body.alto-contraste form,
+    body.alto-contraste input,
+    body.alto-contraste select {
+      background-color: #000000 !important;
+      color: #ffff00 !important;
+      border-color: #ffff00 !important;
+    }
+
+    body.alto-contraste button,
+    body.alto-contraste a {
+      background-color: #ffff00 !important;
+      color: #000000 !important;
+      border: 2px solid #ffffff !important;
+      font-weight: bold !important;
+    }
+
+    body.alto-contraste button:focus,
+    body.alto-contraste a:focus {
+      outline: 4px solid #ffffff !important;
+      outline-offset: 2px !important;
+    }
+
+    /* FOCO VISÍVEL DESTACADO PARA ACESSIBILIDADE POR TECLADO (WCAG 2.4.7) */
+    *:focus-visible {
+      outline: 4px solid #2563eb !important;
+      outline-offset: 3px !important;
+    }
+
+    body.alto-contraste *:focus-visible {
+      outline: 4px solid #ffffff !important;
+    }
+
+    /* ANIMAÇÃO SUAVE PARA AVISOS DINÂMICOS */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .animar-fade {
+      animation: fadeIn 0.3s ease-out forwards;
+    }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-900 font-sans min-h-full flex flex-col transition-colors duration-200">
+
+  <!-- BARRA DE FERRAMENTAS DE ACESSIBILIDADE -->
+  <header role="banner" class="bg-slate-900 text-white p-4 shadow-md sticky top-0 z-30">
+    <div class="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-4">
+      
+      <!-- Título Principal com Ícone -->
+      <div class="flex items-center gap-3">
+        <span class="text-3xl" aria-hidden="true">🛡️</span>
+        <div>
+          <h1 class="text-2xl font-extrabold tracking-tight">Guardião Digital</h1>
+          <p class="text-xs sm:text-sm text-slate-300">UX & Acessibilidade • Projeto Prático Alura</p>
+        </div>
+      </div>
+
+      <!-- Controles de Acessibilidade via JavaScript -->
+      <div class="flex flex-wrap items-center gap-2" role="region" aria-label="Ferramentas de Acessibilidade">
+        
+        <!-- Redimensionamento de Texto -->
+        <div class="flex items-center bg-slate-800 rounded-lg p-1 border border-slate-700">
+          <span class="text-xs font-semibold px-2 text-slate-300 uppercase">Texto:</span>
+          <button id="btn-diminuir-fonte" class="px-3 py-1 bg-slate-700 hover:bg-slate-600 rounded text-sm font-bold text-white transition focus:ring-2 focus:ring-blue-400" title="Diminuir tamanho do texto" aria-label="Diminuir tamanho do texto">A-</button>
+          <button id="btn-normal-fonte" class="px-3 py-1 bg-slate-700 hover:bg-slate-600 rounded text-sm font-bold text-white mx-1 transition focus:ring-2 focus:ring-blue-400" title="Restaurar tamanho normal do texto" aria-label="Tamanho normal do texto">A</button>
+          <button id="btn-aumentar-fonte" class="px-3 py-1 bg-slate-700 hover:bg-slate-600 rounded text-sm font-bold text-white transition focus:ring-2 focus:ring-blue-400" title="Aumentar tamanho do texto" aria-label="Aumentar tamanho do texto">A+</button>
+        </div>
+
+        <!-- Botão de Alto Contraste -->
+        <button id="btn-alto-contraste" aria-pressed="false" class="flex items-center gap-2 px-3 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-sm rounded-lg shadow transition focus:ring-2 focus:ring-amber-300">
+          <span aria-hidden="true">👁️</span>
+          <span>Alto Contraste</span>
+        </button>
+
+        <!-- Botão de Leitor de Voz -->
+        <button id="btn-ouvir-pagina" class="flex items-center gap-2 px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm rounded-lg shadow transition focus:ring-2 focus:ring-indigo-300">
+          <span id="icone-voz" aria-hidden="true">🔊</span>
+          <span id="texto-btn-voz">Ouvir Página</span>
+        </button>
+
+      </div>
+    </div>
   </header>
 
-  <main class="container">
+  <!-- NAVEGAÇÃO POR ABAS ACESSÍVEIS (WCAG TABLIST PATTERN) -->
+  <nav class="bg-white border-b-2 border-slate-300 shadow-sm" aria-label="Navegação Principal do Site">
+    <div class="max-w-6xl mx-auto flex overflow-x-auto scrollbar-none" role="tablist" aria-label="Seções do Guardião Digital">
+      
+      <button role="tab" aria-selected="true" aria-controls="painel-inicio" id="tab-inicio" tabindex="0" class="tab-btn border-b-4 border-blue-700 text-blue-700 font-extrabold px-5 py-4 flex items-center gap-2 text-base sm:text-lg whitespace-nowrap bg-blue-50 focus:outline-none">
+        <span aria-hidden="true">🏠</span> Início
+      </button>
 
-    <div class="card">
-      <div class="card-inner">
-        <div class="card-front fake">
-          <span class="badge">FAKE</span>
-          <h2>Pinguins conseguem voar como pássaros comuns no céu?</h2>
-        </div>
-        <div class="card-back truth">
-          <span class="badge">FATO VERDADEIRO</span>
-          <p><strong>Falso!</strong> Pinguins não conseguem voar pelo ar. No entanto, suas asas evoluíram para se tornarem excelentes nadadeiras, fazendo deles ótimos nadadores.</p>
+      <button role="tab" aria-selected="false" aria-controls="painel-validador" id="tab-validador" tabindex="-1" class="tab-btn border-b-4 border-transparent text-slate-700 hover:text-blue-700 font-bold px-5 py-4 flex items-center gap-2 text-base sm:text-lg whitespace-nowrap focus:outline-none">
+        <span aria-hidden="true">🔍</span> Validador de Golpes
+      </button>
+
+      <button role="tab" aria-selected="false" aria-controls="painel-conselhos" id="tab-conselhos" tabindex="-1" class="tab-btn border-b-4 border-transparent text-slate-700 hover:text-blue-700 font-bold px-5 py-4 flex items-center gap-2 text-base sm:text-lg whitespace-nowrap focus:outline-none">
+        <span aria-hidden="true">💡</span> Dicas de Segurança
+      </button>
+
+      <button role="tab" aria-selected="false" aria-controls="painel-direitos" id="tab-direitos" tabindex="-1" class="tab-btn border-b-4 border-transparent text-slate-700 hover:text-blue-700 font-bold px-5 py-4 flex items-center gap-2 text-base sm:text-lg whitespace-nowrap focus:outline-none">
+        <span aria-hidden="true">⚖️</span> Seus Direitos
+      </button>
+
+      <button role="tab" aria-selected="false" aria-controls="painel-emergencia" id="tab-emergencia" tabindex="-1" class="tab-btn border-b-4 border-transparent text-slate-700 hover:text-blue-700 font-bold px-5 py-4 flex items-center gap-2 text-base sm:text-lg whitespace-nowrap focus:outline-none">
+        <span aria-hidden="true">🚨</span> Canais de Emergência
+      </button>
+
+    </div>
+  </nav>
+
+  <!-- CONTEÚDO PRINCIPAL (PAINÉIS DE ABA) -->
+  <main id="conteudo-principal" role="main" class="max-w-6xl mx-auto w-full p-4 sm:p-6 flex-1">
+
+    <!-- SEÇÃO 1: INÍCIO -->
+    <section id="painel-inicio" role="tabpanel" aria-labelledby="tab-inicio" tabindex="0" class="tab-panel space-y-6">
+      
+      <div class="bg-white border-2 border-slate-300 rounded-2xl p-6 sm:p-8 shadow-sm">
+        <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+          <div class="space-y-3 max-w-2xl">
+            <span class="inline-block px-3 py-1 bg-blue-100 text-blue-800 text-xs font-bold rounded-full uppercase tracking-wider">Acessibilidade na Prática</span>
+            <h2 class="text-3xl font-extrabold text-blue-950">Segurança Digital Sem Barreiras</h2>
+            <p class="text-lg text-slate-700 leading-relaxed">
+              Bem-vindo ao <strong>Guardião Digital</strong>! Este projeto foi desenvolvido aplicando diretrizes internacionais de acessibilidade (WCAG 2.1) e princípios de UX aprendidos nos cursos da Alura.
+            </p>
+            <p class="text-slate-600">
+              Navegue com facilidade usando seu mouse, teclado (setas e Tab) ou ouvindo o conteúdo via sintetizador de voz integrado.
+            </p>
+          </div>
+
+          <!-- Banner de Ação Rápida de Emergência -->
+          <div class="w-full md:w-auto bg-red-50 border-2 border-red-500 rounded-xl p-6 text-center shadow-inner flex flex-col items-center">
+            <span class="text-4xl mb-2" aria-hidden="true">⚠️</span>
+            <h3 class="text-lg font-bold text-red-800 mb-1">Está sob suspeita de golpe agora?</h3>
+            <p class="text-sm text-slate-700 mb-4">Mantenha a calma e não faça transferências.</p>
+            <button id="btn-abrir-modal" class="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white font-bold px-6 py-3 rounded-xl shadow-lg transition transform hover:scale-105 focus:ring-4 focus:ring-red-400">
+              🚨 Abrir Central de Emergência
+            </button>
+          </div>
         </div>
       </div>
-    </div>
 
-    <div class="card">
-      <div class="card-inner">
-        <div class="card-front fake">
-          <span class="badge">FAKE</span>
-          <h2>A Grande Muralha da China é visível da Lua a olho nu?</h2>
-        </div>
-        <div class="card-back truth">
-          <span class="badge">FATO VERDADEIRO</span>
-          <p><strong>Falso!</strong> Nem mesmo em órbita baixa da Terra é fácil enxergá-la sem ajuda. Da Lua, é completamente impossível ver a olho nu.</p>
+      <!-- Cards Informativos com Síntese de Voz Individual -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <article class="bg-white p-6 rounded-2xl border-2 border-slate-200 shadow-sm flex flex-col justify-between hover:border-blue-300 transition">
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-4xl" aria-hidden="true">🔑</span>
+              <span class="text-xs font-bold bg-amber-100 text-amber-800 px-2 py-1 rounded">Essencial</span>
+            </div>
+            <h3 class="text-xl font-bold text-slate-900 mb-2">Códigos e Senhas</h3>
+            <p class="text-slate-600 mb-4">Nunca compartilhe códigos que chegaram por SMS no seu celular. Bancos e empresas sérias jamais pedem esse código por telefone.</p>
+          </div>
+          <button onclick="falarTexto('Atenção: Nunca compartilhe códigos de verificação recebidos por SMS no seu celular.')" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 border border-slate-300 focus:ring-2 focus:ring-blue-500">
+            <span aria-hidden="true">🔊</span> Ouvir Alerta
+          </button>
+        </article>
+
+        <article class="bg-white p-6 rounded-2xl border-2 border-slate-200 shadow-sm flex flex-col justify-between hover:border-blue-300 transition">
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-4xl" aria-hidden="true">📱</span>
+              <span class="text-xs font-bold bg-red-100 text-red-800 px-2 py-1 rounded">Muito Comum</span>
+            </div>
+            <h3 class="text-xl font-bold text-slate-900 mb-2">Golpe do WhatsApp</h3>
+            <p class="text-slate-600 mb-4">Se algum parente mandar mensagem de um número desconhecido pedindo PIX urgente, antes de responder, ligue para o número antigo dele.</p>
+          </div>
+          <button onclick="falarTexto('Golpe do WhatsApp: Se um parente pedir dinheiro por número novo, ligue no número antigo dele antes de transferir qualquer valor.')" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 border border-slate-300 focus:ring-2 focus:ring-blue-500">
+            <span aria-hidden="true">🔊</span> Ouvir Alerta
+          </button>
+        </article>
+
+        <article class="bg-white p-6 rounded-2xl border-2 border-slate-200 shadow-sm flex flex-col justify-between hover:border-blue-300 transition">
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-4xl" aria-hidden="true">💳</span>
+              <span class="text-xs font-bold bg-blue-100 text-blue-800 px-2 py-1 rounded">Fique Atento</span>
+            </div>
+            <h3 class="text-xl font-bold text-slate-900 mb-2">Falsa Central do Banco</h3>
+            <p class="text-slate-600 mb-4">O banco nunca liga pedindo para cancelar compras, digitar senhas no teclado ou enviar motoboy para retirar o seu cartão bancário.</p>
+          </div>
+          <button onclick="falarTexto('Falsa Central: Bancos nunca pedem senhas por telefone e nunca enviam motoboy para buscar cartão.')" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 border border-slate-300 focus:ring-2 focus:ring-blue-500">
+            <span aria-hidden="true">🔊</span> Ouvir Alerta
+          </button>
+        </article>
+      </div>
+
+    </section>
+
+    <!-- SEÇÃO 2: VALIDADOR DE GOLPES (FERRAMENTA INTERATIVA JS) -->
+    <section id="painel-validador" role="tabpanel" aria-labelledby="tab-validador" tabindex="0" class="tab-panel hidden space-y-6">
+      <div class="bg-white border-2 border-slate-300 rounded-2xl p-6 sm:p-8 shadow-sm">
+        <div class="max-w-3xl">
+          <h2 class="text-3xl font-extrabold text-blue-950 mb-2">Validador & Simulador de Golpe</h2>
+          <p class="text-slate-700 mb-6">
+            Recebeu uma mensagem estranha ou uma ligação duvidosa? Escolha o tipo de ocorrência ou digite abaixo para receber um diagnóstico imediato e acessível.
+          </p>
+
+          <!-- Formulário Acessível -->
+          <form id="form-validador" onsubmit="event.preventDefault(); analisarSuspeita();" class="space-y-5">
+            
+            <div>
+              <label for="select-situacao" class="block font-bold text-lg text-slate-900 mb-2">1. Selecione a situação enfrentada:</label>
+              <select id="select-situacao" class="w-full p-4 border-2 border-slate-400 rounded-xl text-slate-900 text-lg bg-white focus:ring-4 focus:ring-blue-300">
+                <option value="">-- Escolha uma opção da lista --</option>
+                <option value="whatsapp">Filho / Parente pedindo dinheiro em número novo no WhatsApp</option>
+                <option value="banco">Ligação dizendo ser da central de segurança do banco pedindo confirmação de senha</option>
+                <option value="correios">SMS com aviso de encomenda retida nos Correios e link para pagar taxa</option>
+                <option value="inss">Promessa de liberação antecipada de benefício do INSS mediante pagamento</option>
+                <option value="premio">Mensagem dizendo que ganhei um sorteio ou PIX e preciso clicar no link</option>
+                <option value="outro">Outra situação / Mensagem personalizada</option>
+              </select>
+            </div>
+
+            <!-- Campo Opcional para Texto Personalizado -->
+            <div id="container-texto-livre" class="space-y-2">
+              <label for="input-mensagem-texto" class="block font-bold text-slate-900">2. Copie ou digite trechos da mensagem recebida (Opcional):</label>
+              <textarea id="input-mensagem-texto" rows="3" placeholder="Exemplo: 'Olá pai, troquei de número, me transfere 500 reais pra pagar uma conta urgente...'" class="w-full p-4 border-2 border-slate-300 rounded-xl text-slate-900 focus:ring-4 focus:ring-blue-300"></textarea>
+            </div>
+
+            <button type="submit" class="w-full bg-blue-700 hover:bg-blue-800 text-white text-lg font-bold py-4 px-6 rounded-xl shadow-md transition flex items-center justify-center gap-3 focus:ring-4 focus:ring-blue-400">
+              <span aria-hidden="true">🔍</span>
+              <span>Analisar Risco Agora</span>
+            </button>
+          </form>
+
+          <!-- Região ARIA LIVE para leitores de tela capturarem dinâmica e instantaneamente -->
+          <div id="resultado-validacao" aria-live="polite" class="mt-8"></div>
         </div>
       </div>
-    </div>
+    </section>
 
-    <div class="card">
-      <div class="card-inner">
-        <div class="card-front fake">
-          <span class="badge">FAKE</span>
-          <h2>Comer cenoura faz você enxergar no escuro?</h2>
-        </div>
-        <div class="card-back truth">
-          <span class="badge">FATO VERDADEIRO</span>
-          <p><strong>Falso!</strong> A cenoura é rica em Vitamina A, que é ótima para a saúde dos olhos, mas ela não dá o "superpoder" de enxergar na escuridão.</p>
+    <!-- SEÇÃO 3: DICAS DE SEGURANÇA -->
+    <section id="painel-conselhos" role="tabpanel" aria-labelledby="tab-conselhos" tabindex="0" class="tab-panel hidden space-y-6">
+      <div class="bg-white border-2 border-slate-300 rounded-2xl p-6 sm:p-8 shadow-sm">
+        <h2 class="text-3xl font-extrabold text-blue-950 mb-3">Boas Práticas e UX de Segurança</h2>
+        <p class="text-slate-600 mb-6">Confira o guia prático de proteção para o dia a dia:</p>
+
+        <div class="space-y-4">
+          <div class="bg-slate-50 p-5 rounded-2xl border-l-8 border-blue-600 flex items-start gap-4">
+            <span class="text-3xl" aria-hidden="true">⏱️</span>
+            <div>
+              <h3 class="font-bold text-xl text-slate-900">1. A Regra dos 5 Minutos</h3>
+              <p class="text-slate-700 mt-1">Os golpistas usam a urgência para fazer você agir sem pensar. Se alguém ligar falando de sequestro, conta bloqueada ou compras suspeitas, desligue e aguarde 5 minutos antes de tomar qualquer medida.</p>
+            </div>
+          </div>
+
+          <div class="bg-slate-50 p-5 rounded-2xl border-l-8 border-blue-600 flex items-start gap-4">
+            <span class="text-3xl" aria-hidden="true">📞</span>
+            <div>
+              <h3 class="font-bold text-xl text-slate-900">2. Confirmação por Voz Tradicional</h3>
+              <p class="text-slate-700 mt-1">Antes de realizar qualquer PIX solicitado por mensagem, faça uma ligação normal de voz para o número da pessoa que você já tem salvo na sua agenda telefônica.</p>
+            </div>
+          </div>
+
+          <div class="bg-slate-50 p-5 rounded-2xl border-l-8 border-blue-600 flex items-start gap-4">
+            <span class="text-3xl" aria-hidden="true">🚫</span>
+            <div>
+              <h3 class="font-bold text-xl text-slate-900">3. Cuidado com Links em SMS e E-mail</h3>
+              <p class="text-slate-700 mt-1">Bancos e órgãos governamentais não enviam links direcionando para páginas de login via SMS. Acesse sempre digitando o site oficial ou utilizando o aplicativo oficial instalado na sua loja de apps.</p>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
+    </section>
+
+    <!-- SEÇÃO 4: SEUS DIREITOS -->
+    <section id="painel-direitos" role="tabpanel" aria-labelledby="tab-direitos" tabindex="0" class="tab-panel hidden space-y-6">
+      <div class="bg-white border-2 border-slate-300 rounded-2xl p-6 sm:p-8 shadow-sm">
+        <h2 class="text-3xl font-extrabold text-blue-950 mb-4">Seus Direitos Garantidos por Lei</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div class="bg-emerald-50 border-2 border-emerald-300 rounded-2xl p-6">
+            <span class="text-3xl block mb-2" aria-hidden="true">👵</span>
+            <h3 class="text-xl font-bold text-emerald-950 mb-2">Estatuto da Pessoa Idosa</h3>
+            <p class="text-emerald-900 text-sm leading-relaxed">Garante atendimento prioritário, inclusão em tecnologias acessíveis e proteção reforçada contra discriminação e abusos financeiros no ambiente virtual.</p>
+          </div>
+
+          <div class="bg-blue-50 border-2 border-blue-300 rounded-2xl p-6">
+            <span class="text-3xl block mb-2" aria-hidden="true">🛡️</span>
+            <h3 class="text-xl font-bold text-blue-950 mb-2">LGPD (Lei de Dados)</h3>
+            <p class="text-blue-900 text-sm leading-relaxed">Seus dados pessoais (como CPF, telefone e endereço) não podem ser vendidos ou compartilhados com terceiros sem seu consentimento explícito e claro.</p>
+          </div>
+
+          <div class="bg-purple-50 border-2 border-purple-300 rounded-2xl p-6">
+            <span class="text-3xl block mb-2" aria-hidden="true">🛍️</span>
+            <h3 class="text-xl font-bold text-purple-950 mb-2">Código de Defesa do Consumidor</h3>
+            <p class="text-purple-900 text-sm leading-relaxed">Direito de arrependimento de até 7 dias para compras realizadas fora do estabelecimento comercial (internet ou telefone), garantindo o reembolso total.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SEÇÃO 5: CANAIS DE EMERGÊNCIA -->
+    <section id="painel-emergencia" role="tabpanel" aria-labelledby="tab-emergencia" tabindex="0" class="tab-panel hidden space-y-6">
+      <div class="bg-white border-2 border-slate-300 rounded-2xl p-6 sm:p-8 shadow-sm">
+        <h2 class="text-3xl font-extrabold text-red-700 mb-2">Canais de Ajuda & Suporte Direto</h2>
+        <p class="text-slate-600 mb-6">Em caso de emergência ou golpe confirmado, acione os canais de apoio imediatamente:</p>
+
+        <!-- Grade de Telefones de Emergência -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+          <a href="tel:190" class="flex items-center justify-between p-5 bg-red-100 border-2 border-red-500 rounded-xl text-red-950 font-extrabold text-lg hover:bg-red-200 transition focus:ring-4 focus:ring-red-400">
+            <span>🚨 Polícia Militar</span>
+            <span class="text-2xl underline">190</span>
+          </a>
+
+          <a href="tel:181" class="flex items-center justify-between p-5 bg-amber-100 border-2 border-amber-500 rounded-xl text-amber-950 font-extrabold text-lg hover:bg-amber-200 transition focus:ring-4 focus:ring-amber-400">
+            <span>🛡️ Disque Denúncia</span>
+            <span class="text-2xl underline">181</span>
+          </a>
+
+          <a href="tel:135" class="flex items-center justify-between p-5 bg-blue-100 border-2 border-blue-500 rounded-xl text-blue-950 font-extrabold text-lg hover:bg-blue-200 transition focus:ring-4 focus:ring-blue-400">
+            <span>🏥 Central INSS</span>
+            <span class="text-2xl underline">135</span>
+          </a>
+        </div>
+
+        <!-- Gerenciamento de Contato de Confiança (LocalStorage via JavaScript) -->
+        <div class="bg-slate-100 border-2 border-slate-300 rounded-2xl p-6 space-y-4">
+          <h3 class="text-xl font-bold text-slate-900 flex items-center gap-2">
+            <span>👨‍👩‍👧</span> Seu Contato Pessoal de Confiança
+          </h3>
+          <p class="text-slate-700 text-sm">
+            Cadastre o número de um parente ou amigo próximo para ter fácil acesso em momentos de dúvida:
+          </p>
+
+          <form id="form-contato-confianca" onsubmit="event.preventDefault(); salvarContatoConfianca();" class="flex flex-col sm:flex-row gap-3">
+            <input type="text" id="input-nome-contato" placeholder="Nome (Ex: Maria - Filha)" class="flex-1 p-3 border-2 border-slate-300 rounded-xl text-slate-900 focus:ring-2 focus:ring-blue-500" required>
+            <input type="tel" id="input-tel-contato" placeholder="Telefone (Ex: 11 99999-9999)" class="flex-1 p-3 border-2 border-slate-300 rounded-xl text-slate-900 focus:ring-2 focus:ring-blue-500" required>
+            <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-6 py-3 rounded-xl transition">
+              Salvar Contato
+            </button>
+          </form>
+
+          <div id="exibicao-contato-salvo" class="mt-4 hidden p-4 bg-emerald-100 border-2 border-emerald-500 text-emerald-950 rounded-xl flex items-center justify-between">
+            <div>
+              <span id="label-nome-salvo" class="font-bold block text-lg"></span>
+              <a id="link-tel-salvo" href="#" class="text-emerald-800 font-bold underline text-lg"></a>
+            </div>
+            <button onclick="removerContatoConfianca()" class="text-xs bg-red-200 hover:bg-red-300 text-red-900 font-bold px-3 py-2 rounded-lg border border-red-400">
+              Remover
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </section>
 
   </main>
 
-  <footer>
-    <p>Projeto desenvolvido no curso Start - Checagem de Fatos</p>
+  <!-- MODAL DE EMERGÊNCIA ACESSÍVEL (FOCUS TRAP & ARIA-MODAL) -->
+  <div id="modal-emergencia" role="dialog" aria-modal="true" aria-labelledby="titulo-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden">
+    <div class="bg-white w-full max-w-lg rounded-2xl p-6 sm:p-8 shadow-2xl border-4 border-red-600 space-y-5 animar-fade">
+      
+      <div class="flex items-center justify-between border-b pb-4">
+        <h3 id="titulo-modal" class="text-2xl font-extrabold text-red-700 flex items-center gap-2">
+          <span aria-hidden="true">🚨</span> Central de Apoio Rápido
+        </h3>
+        <button id="btn-fechar-modal" class="text-slate-500 hover:text-slate-900 text-2xl font-bold p-2 rounded-lg focus:ring-2 focus:ring-red-500" aria-label="Fechar janela de emergência">✕</button>
+      </div>
+
+      <p class="text-slate-800 font-medium text-lg">
+        Se você está conversando com alguém suspeito no momento:
+      </p>
+
+      <div class="space-y-3">
+        <div class="p-4 bg-slate-100 rounded-xl border border-slate-300 font-bold text-slate-900 flex items-center gap-3">
+          <span class="text-red-600 text-xl">1.</span> PARE a conversa agora mesmo.
+        </div>
+        <div class="p-4 bg-slate-100 rounded-xl border border-slate-300 font-bold text-slate-900 flex items-center gap-3">
+          <span class="text-red-600 text-xl">2.</span> NÃO faça transferências PIX ou informe senhas.
+        </div>
+        <div class="p-4 bg-slate-100 rounded-xl border border-slate-300 font-bold text-slate-900 flex items-center gap-3">
+          <span class="text-red-600 text-xl">3.</span> LIGUE para a polícia ou para um familiar.
+        </div>
+      </div>
+
+      <div class="pt-4 flex flex-col sm:flex-row gap-3">
+        <a href="tel:190" class="flex-1 bg-red-600 text-white font-bold py-3 text-center rounded-xl hover:bg-red-700 transition focus:ring-4 focus:ring-red-400">
+          Ligar 190 (Polícia)
+        </a>
+        <button id="btn-fechar-modal-2" class="bg-slate-200 text-slate-800 font-bold py-3 px-6 rounded-xl hover:bg-slate-300 transition focus:ring-2 focus:ring-slate-400">
+          Entendi / Voltar
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- RODAPÉ COMPATÍVEL -->
+  <footer role="contentinfo" class="bg-slate-900 text-slate-400 text-center p-6 text-sm border-t border-slate-800 mt-auto">
+    <div class="max-w-6xl mx-auto space-y-2">
+      <p class="font-bold text-white">Guardião Digital • Projeto de UX e Acessibilidade Front-End (Alura)</p>
+      <p class="text-xs text-slate-400">Desenvolvido com suporte WCAG 2.1 AA • HTML5 Semântico, Tailwind CSS e JavaScript Puro.</p>
+    </div>
   </footer>
+
+  <script>
+    // ==========================================================================
+    // GUARDIÃO DIGITAL - SCRIPT.JS COMPLETO E EDUCATIVO
+    // ==========================================================================
+
+    // 1. TAMANHO DA FONTE DINÂMICO
+    let percentualFonte = 100;
+    const htmlElement = document.documentElement;
+    const btnAumentar = document.getElementById('btn-aumentar-fonte');
+    const btnDiminuir = document.getElementById('btn-diminuir-fonte');
+    const btnNormal = document.getElementById('btn-normal-fonte');
+
+    function atualizarTamanhoFonte() {
+      htmlElement.style.fontSize = percentualFonte + '%';
+    }
+
+    btnAumentar.addEventListener('click', () => {
+      if (percentualFonte < 140) {
+        percentualFonte += 10;
+        atualizarTamanhoFonte();
+      }
+    });
+
+    btnDiminuir.addEventListener('click', () => {
+      if (percentualFonte > 90) {
+        percentualFonte -= 10;
+        atualizarTamanhoFonte();
+      }
+    });
+
+    btnNormal.addEventListener('click', () => {
+      percentualFonte = 100;
+      atualizarTamanhoFonte();
+    });
+
+    // 2. MODO ALTO CONTRASTE COM ARIA-PRESSED
+    const btnAltoContraste = document.getElementById('btn-alto-contraste');
+
+    btnAltoContraste.addEventListener('click', () => {
+      document.body.classList.toggle('alto-contraste');
+      const estaAtivo = document.body.classList.contains('alto-contraste');
+      
+      // Atualiza o estado ARIA para leitores de tela
+      btnAltoContraste.setAttribute('aria-pressed', estaAtivo);
+      
+      const mensagem = estaAtivo ? "Alto contraste ativado" : "Alto contraste desativado";
+      falarTexto(mensagem);
+    });
+
+    // 3. NAVEGAÇÃO POR ABAS ACESSÍVEIS (WCAG ARIA TABLIST)
+    const tabs = document.querySelectorAll('[role="tab"]');
+    const tabPanels = document.querySelectorAll('.tab-panel');
+
+    tabs.forEach(tab => {
+      // Evento de clique
+      tab.addEventListener('click', () => {
+        ativarAba(tab);
+      });
+
+      // Suporte a navegação via teclado (Setas Esquerda e Direita)
+      tab.addEventListener('keydown', (e) => {
+        const indexAtual = Array.from(tabs).indexOf(document.activeElement);
+
+        if (e.key === 'ArrowRight') {
+          e.preventDefault();
+          const proximaAba = tabs[(indexAtual + 1) % tabs.length];
+          proximaAba.focus();
+          ativarAba(proximaAba);
+        } else if (e.key === 'ArrowLeft') {
+          e.preventDefault();
+          const abaAnterior = tabs[(indexAtual - 1 + tabs.length) % tabs.length];
+          abaAnterior.focus();
+          ativarAba(abaAnterior);
+        }
+      });
+    });
+
+    function ativarAba(abaSelecionada) {
+      // Reseta todas as abas
+      tabs.forEach(t => {
+        t.setAttribute('aria-selected', 'false');
+        t.setAttribute('tabindex', '-1');
+        t.classList.remove('border-blue-700', 'text-blue-700', 'bg-blue-50', 'font-extrabold');
+        t.classList.add('border-transparent', 'text-slate-700');
+      });
+
+      // Esconde todos os painéis
+      tabPanels.forEach(p => p.classList.add('hidden'));
+
+      // Ativa a aba clicada
+      abaSelecionada.setAttribute('aria-selected', 'true');
+      abaSelecionada.setAttribute('tabindex', '0');
+      abaSelecionada.classList.add('border-blue-700', 'text-blue-700', 'bg-blue-50', 'font-extrabold');
+      abaSelecionada.classList.remove('border-transparent', 'text-slate-700');
+
+      // Exibe o painel de destino
+      const painelId = abaSelecionada.getAttribute('aria-controls');
+      const painelAlvo = document.getElementById(painelId);
+      if (painelAlvo) {
+        painelAlvo.classList.remove('hidden');
+      }
+    }
+
+    // 4. SÍNTESE DE VOZ (LEITOR DE TELA EMBUTIDO)
+    let estaFalando = false;
+
+    function falarTexto(texto) {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel(); // Para leituras pendentes
+
+        const uttr = new SpeechSynthesisUtterance(texto);
+        uttr.lang = 'pt-BR';
+        uttr.rate = 0.95; // Velocidade ajustada para maior clareza
+
+        uttr.onstart = () => {
+          estaFalando = true;
+          atualizarBotaoVoz();
+        };
+
+        uttr.onend = () => {
+          estaFalando = false;
+          atualizarBotaoVoz();
+        };
+
+        window.speechSynthesis.speak(uttr);
+      }
+    }
+
+    const btnOuvirPagina = document.getElementById('btn-ouvir-pagina');
+    const textoBtnVoz = document.getElementById('texto-btn-voz');
+    const iconeVoz = document.getElementById('icone-voz');
+
+    function atualizarBotaoVoz() {
+      if (estaFalando) {
+        textoBtnVoz.innerText = "Parar Leitura";
+        iconeVoz.innerText = "⏹️";
+      } else {
+        textoBtnVoz.innerText = "Ouvir Página";
+        iconeVoz.innerText = "🔊";
+      }
+    }
+
+    btnOuvirPagina.addEventListener('click', () => {
+      if (estaFalando) {
+        window.speechSynthesis.cancel();
+        estaFalando = false;
+        atualizarBotaoVoz();
+      } else {
+        const textoResumo = "Você está no Guardião Digital. Plataforma acessível contra golpes na internet. Escolha uma das abas para navegar ou utilize nosso validador de golpes.";
+        falarTexto(textoResumo);
+      }
+    });
+
+    // 5. VALIDADOR E SIMULADOR DE GOLPES INTERATIVO
+    function analisarSuspeita() {
+      const select = document.getElementById('select-situacao');
+      const inputTexto = document.getElementById('input-mensagem-texto');
+      const containerResultado = document.getElementById('resultado-validacao');
+
+      const valorSelect = select.value;
+      const textoDigitado = inputTexto.value.toLowerCase().trim();
+
+      if (!valorSelect && !textoDigitado) {
+        containerResultado.innerHTML = `
+          <div class="p-4 bg-amber-100 border-2 border-amber-500 text-amber-950 rounded-xl font-bold animar-fade">
+            ⚠️ Por favor, escolha uma opção ou digite um trecho da mensagem recebida para fazermos a análise.
+          </div>
+        `;
+        falarTexto("Por favor, selecione uma opção ou digite um texto para análise.");
+        return;
+      }
+
+      let mensagemResultado = "";
+      let nivelRisco = "ALTO RISCO DE FRAUDE";
+      let corBorda = "border-red-600";
+      let corBg = "bg-red-50";
+
+      // Lógica de diagnóstico baseada em palavras-chave e seleção
+      if (valorSelect === 'whatsapp' || textoDigitado.includes('troquei de número') || textoDigitado.includes('pix')) {
+        mensagemResultado = "🚨 ATENÇÃO: Forte indício de Golpe do WhatsApp! Golpistas usam fotos de conhecidos para pedir PIX urgente. Ligue imediatamente para o número tradicional do seu parente.";
+      } else if (valorSelect === 'banco' || textoDigitado.includes('senha') || textoDigitado.includes('cartao') || textoDigitado.includes('gerente')) {
+        mensagemResultado = "🚨 ATENÇÃO: Tentativa de Golpe da Falsa Central! O seu banco NUNCA liga solicitando senha, código de SMS ou envio de motoboy.";
+      } else if (valorSelect === 'correios' || textoDigitado.includes('taxa') || textoDigitado.includes('correios')) {
+        mensagemResultado = "🚨 ATENÇÃO: Golpe do Falso Correios! SMS avisando sobre taxas de encomendas com links são quase 100% das vezes tentativas de roubo de dados.";
+      } else if (valorSelect === 'inss' || textoDigitado.includes('inss') || textoDigitado.includes('revisão')) {
+        mensagemResultado = "🚨 ATENÇÃO: Golpe do INSS! O INSS não exige pagamentos antecipados para liberar benefícios ou aposentadoria.";
+      } else {
+        mensagemResultado = "⚠️ ALERTA DE PRECAUÇÃO: Qualquer mensagem pedindo dinheiro, senhas ou cliques em links desconhecidos deve ser tratada como suspeita. Na dúvida, consulte um familiar.";
+        nivelRisco = "SUSPEITA RELEVANTE";
+        corBorda = "border-amber-500";
+        corBg = "bg-amber-50";
+      }
+
+      containerResultado.innerHTML = `
+        <div class="p-6 ${corBg} border-4 ${corBorda} rounded-2xl shadow-lg space-y-3 animar-fade">
+          <span class="inline-block px-3 py-1 bg-red-600 text-white font-extrabold text-xs rounded-md">${nivelRisco}</span>
+          <p class="text-xl font-extrabold text-slate-900">${mensagemResultado}</p>
+          <div class="pt-2 border-t border-slate-300 text-slate-700 text-sm">
+            <p><strong>Orientação de UX/Segurança:</strong> Não responda a mensagem, não clique no link e não repasse dinheiro. Se já tiver feito PIX, acione seu banco imediatamente.</p>
+          </div>
+        </div>
+      `;
+
+      // Lê o resultado em voz alta para autonomia
+      falarTexto(mensagemResultado);
+    }
+
+    // 6. GERENCIADOR DE CONTATO DE CONFIANÇA (LOCALSTORAGE)
+    function carregarContatoConfianca() {
+      const contatoSalvo = localStorage.getItem('guardiao_contato');
+      const divExibicao = document.getElementById('exibicao-contato-salvo');
+      
+      if (contatoSalvo) {
+        const dados = JSON.parse(contatoSalvo);
+        document.getElementById('label-nome-salvo').innerText = dados.nome;
+        const linkTel = document.getElementById('link-tel-salvo');
+        linkTel.innerText = dados.telefone;
+        linkTel.href = 'tel:' + dados.telefone.replace(/\D/g, '');
+        divExibicao.classList.remove('hidden');
+      } else {
+        divExibicao.classList.add('hidden');
+      }
+    }
+
+    function salvarContatoConfianca() {
+      const nome = document.getElementById('input-nome-contato').value;
+      const tel = document.getElementById('input-tel-contato').value;
+
+      if (nome && tel) {
+        localStorage.setItem('guardiao_contato', JSON.stringify({ nome: nome, telefone: tel }));
+        carregarContatoConfianca();
+        falarTexto("Contato de confiança salvo com sucesso.");
+        document.getElementById('form-contato-confianca').reset();
+      }
+    }
+
+    function removerContatoConfianca() {
+      localStorage.removeItem('guardiao_contato');
+      carregarContatoConfianca();
+      falarTexto("Contato de confiança removido.");
+    }
+
+    // Carrega ao iniciar
+    carregarContatoConfianca();
+
+    // 7. MODAL DE EMERGÊNCIA COM FOCUS TRAP E TECLA ESC
+    const modal = document.getElementById('modal-emergencia');
+    const btnAbrirModal = document.getElementById('btn-abrir-modal');
+    const btnFecharModal1 = document.getElementById('btn-fechar-modal');
+    const btnFecharModal2 = document.getElementById('btn-fechar-modal-2');
+    let elementoAnteriormenteFocado = null;
+
+    function abrirModalEmergencia() {
+      elementoAnteriormenteFocado = document.activeElement;
+      modal.classList.remove('hidden');
+      btnFecharModal1.focus(); // Move o foco para dentro do modal (Focus Trap)
+      
+      falarTexto("Central de emergência aberta. Siga as instruções na tela.");
+    }
+
+    function fecharModalEmergencia() {
+      modal.classList.add('hidden');
+      if (elementoAnteriormenteFocado) {
+        elementoAnteriormenteFocado.focus(); // Retorna o foco
+      }
+    }
+
+    btnAbrirModal.addEventListener('click', abrirModalEmergencia);
+    btnFecharModal1.addEventListener('click', fecharModalEmergencia);
+    btnFecharModal2.addEventListener('click', fecharModalEmergencia);
+
+    // Fechar ao pressionar ESC
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
+        fecharModalEmergencia();
+      }
+    });
+  </script>
 
 </body>
 </html>
